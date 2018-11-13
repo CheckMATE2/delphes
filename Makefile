@@ -442,7 +442,8 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/VertexSorter.h \
 	modules/VertexFinder.h \
 	modules/VertexFinderDA4D.h \
-	modules/ExampleModule.h
+	modules/ExampleModule.h \
+	modules/LLPModule.h
 tmp/modules/ModulesDict$(PcmSuf): \
 	tmp/modules/ModulesDict.$(SrcSuf)
 ModulesDict$(PcmSuf): \
@@ -815,6 +816,15 @@ tmp/modules/JetPileUpSubtractor.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootResult.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootClassifier.h
+tmp/modules/LLPModule.$(ObjSuf): \
+	modules/LLPModule.$(SrcSuf) \
+	modules/LLPModule.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootResult.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootClassifier.h
 tmp/modules/LeptonDressing.$(ObjSuf): \
 	modules/LeptonDressing.$(SrcSuf) \
 	modules/LeptonDressing.h \
@@ -1129,6 +1139,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/JetFakeParticle.$(ObjSuf) \
 	tmp/modules/JetFlavorAssociation.$(ObjSuf) \
 	tmp/modules/JetPileUpSubtractor.$(ObjSuf) \
+	tmp/modules/LLPModule.$(ObjSuf) \
 	tmp/modules/LeptonDressing.$(ObjSuf) \
 	tmp/modules/Merger.$(ObjSuf) \
 	tmp/modules/MomentumSmearing.$(ObjSuf) \
@@ -2068,6 +2079,10 @@ modules/VertexSorter.h: \
 	@touch $@
 
 modules/Delphes.h: \
+	classes/DelphesModule.h
+	@touch $@
+
+modules/LLPModule.h: \
 	classes/DelphesModule.h
 	@touch $@
 
