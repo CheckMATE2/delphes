@@ -47,11 +47,11 @@ public:
   void printCandidate(Candidate* currPart, std::string currSpaces);
 
 private:
-
-  Int_t fIntParam;
-  Double_t fDoubleParam;
   
-  std::deque <Double_t> fArrayParam;
+  Double_t fMinRadius; //! Minimal radius (in mm) for particle->Position to be considered
+  Double_t fMaxRadius; //! Maximal radius (in mm) for particle->Position to be considered
+
+  std::deque <Int_t> fPdgCodes;
   
   DelphesFormula *fFormula; //!
 

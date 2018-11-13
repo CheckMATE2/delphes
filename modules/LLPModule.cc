@@ -71,26 +71,26 @@ void LLPModule::Init()
 {
   // read parameters
 
-  fIntParam = GetInt("IntParam", 10);
-
-  fDoubleParam = GetDouble("DoubleParam", 1.0);
 
   fFormula->Compile(GetString("EfficiencyFormula", "0.4"));
 
-  ExRootConfParam param = GetParam("ArrayParam");
+  ExRootConfParam param = GetParam("PDGCodes");
   Long_t i, size;
-  fArrayParam.clear();
+  fPdgCodes.clear();
 
   size = param.GetSize();
   for(i = 0; i < size; ++i)
   {
-    fArrayParam.push_back(param[i].GetDouble());
+    fPdgCodes.push_back(param[i].GetInt());
   }
   
   // import input array(s)
 
   fInputArray = ImportArray(GetString("InputArray", "FastJetFinder/jets"));
   fItInputArray = fInputArray->MakeIterator();
+
+  fMinRadius = GetDouble("MinRadius", 100.0);
+  fMaxRadius = GetDouble("MaxRadius", 10000.0);
 
   // create output array(s)
 
@@ -119,6 +119,15 @@ void LLPModule::printCandidate(Candidate* currPart, std::string currSpaces) {
     }
 }
 
+float decRad(Candidate* c) {
+    double x = c->Position.X();
+    double y = c->Position.Y();
+    double z = c->Position.Z();
+    return sqrt(x*x+y*y+z*z);
+}
+
+
+
 void LLPModule::Process()
 {
   Candidate *candidate;
@@ -133,12 +142,20 @@ void LLPModule::Process()
     candidatePosition = candidate->Position;
     candidateMomentum = candidate->Momentum;
 
-    if (candidate->PID == 1000024) {
-	std::cout << "Chargino " << counter++ << std::endl;
-	Candidate* currPart = candidate;
-	std::string nSpaces = "";
-	printCandidate(candidate, "");
+    double d = decRad(candidate);
+    if ( (fMinRadius <= d) && (d <= fMaxRadius) ) {	
+	std::cout << "Particle " << candidate->PID << " has nontrivial decay vertex! (r=" << d << ")" << std::endl;
+	Candidate* mother = static_cast<Candidate*>(fInputArray->At(candidate->M1));
+	if (fPdgCodes.size() == 0 || find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
+	    std::cout << "Mother " << mother->PID << std::endl;
+	    Candidate* dau1 = static_cast<Candidate*>(fInputArray->At(mother->D1));
+	    Candidate* dau2 = static_cast<Candidate*>(fInputArray->At(mother->D2));	    
+	    std::cout << "Daughter1 " << dau1->PID << " has radius " << decRad(dau1) << std::endl;
+	    std::cout << "Daughter2 " << dau2->PID << " has radius " << decRad(dau2) << std::endl;
+	}
+	std::cout << "  " << std::endl;
     }
+
 
 	
 	/*
