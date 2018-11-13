@@ -44,7 +44,7 @@ public:
   void Init();
   void Process();
   void Finish();
-  void printCandidate(Candidate* currPart, std::string currSpaces);
+  void storeCandidate(Candidate* candidate); //! Stores candidate and its entire decay tree
 
 private:
   
@@ -59,7 +59,8 @@ private:
 
   const TObjArray *fInputArray; //!
 
-  TObjArray *fOutputArray; //!
+  TObjArray *fOutputArrayAll; //!
+  TObjArray *fOutputArrayMothers; //!
 
   ClassDef(LLPModule, 1)
 };

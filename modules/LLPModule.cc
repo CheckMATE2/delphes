@@ -94,7 +94,8 @@ void LLPModule::Init()
 
   // create output array(s)
 
-  fOutputArray = ExportArray(GetString("OutputArray", "jets"));
+  fOutputArrayAll = ExportArray(GetString("OutputArrayAll", "All"));
+  fOutputArrayMothers = ExportArray(GetString("OutputArrayMothers", "Mothers"));
 
 }
 
@@ -107,17 +108,6 @@ void LLPModule::Finish()
 
 //------------------------------------------------------------------------------
 
-void LLPModule::printCandidate(Candidate* currPart, std::string currSpaces) {
-    std::cout << currSpaces <<  currPart << "  " << currPart->Status << "  " << currPart->PID << " " << currPart->Momentum.E() << " " << currPart->InitialPosition.T() << "/" << currPart->InitialPosition.X()<< "/" << currPart->InitialPosition.Y()<< "/" << currPart->InitialPosition.Z() << " -> " << currPart->Position.T() << "/" << currPart->Position.X()<< "/" << currPart->Position.Y()<< "/" << currPart->Position.Z() << std::endl;
-    if (currPart->D1 > 0) {
-        Candidate* currPart1 = static_cast<Candidate*>(fInputArray->At(currPart->D1));	    
-	printCandidate(currPart1, currSpaces+"  ");
-    }
-    if (currPart->D2 > 0 and currPart->D2 != currPart->D1) {
-        Candidate* currPart2 = static_cast<Candidate*>(fInputArray->At(currPart->D2));	    
-	printCandidate(currPart2, currSpaces+"  ");
-    }
-}
 
 float decRad(Candidate* c) {
     double x = c->Position.X();
@@ -126,6 +116,17 @@ float decRad(Candidate* c) {
     return sqrt(x*x+y*y+z*z);
 }
 
+void LLPModule::storeCandidate(Candidate* candidate) {
+    fOutputArrayAll->Add(candidate);
+    if (candidate->D1 >= 0) {
+	Candidate* currPart1 = static_cast<Candidate*>(fInputArray->At(candidate->D1));
+	storeCandidate(currPart1);
+    }
+    if (candidate->D2 >= 0) {
+	Candidate* currPart2 = static_cast<Candidate*>(fInputArray->At(candidate->D2));
+	storeCandidate(currPart2);
+    }
+}
 
 
 void LLPModule::Process()
@@ -135,8 +136,9 @@ void LLPModule::Process()
 
   // loop over all input candidates
   fItInputArray->Reset();
-  std::cout << " New Event " << std::endl;
-  int counter = 0;
+
+  // all mothers appear for several daughters and we need to avoid double counting
+  std::deque <Candidate*> storedMothers;
   while((candidate = static_cast<Candidate*>(fItInputArray->Next())))
   {
     candidatePosition = candidate->Position;
@@ -144,38 +146,16 @@ void LLPModule::Process()
 
     double d = decRad(candidate);
     if ( (fMinRadius <= d) && (d <= fMaxRadius) ) {	
-	std::cout << "Particle " << candidate->PID << " has nontrivial decay vertex! (r=" << d << ")" << std::endl;
 	Candidate* mother = static_cast<Candidate*>(fInputArray->At(candidate->M1));
-	if (fPdgCodes.size() == 0 || find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
-	    std::cout << "Mother " << mother->PID << std::endl;
-	    Candidate* dau1 = static_cast<Candidate*>(fInputArray->At(mother->D1));
-	    Candidate* dau2 = static_cast<Candidate*>(fInputArray->At(mother->D2));	    
-	    std::cout << "Daughter1 " << dau1->PID << " has radius " << decRad(dau1) << std::endl;
-	    std::cout << "Daughter2 " << dau2->PID << " has radius " << decRad(dau2) << std::endl;
-	}
-	std::cout << "  " << std::endl;
-    }
-
-
 	
-	/*
-	std::cout << "Found Chargino" << std::endl;
-	if (candidate->D1 > 0) {
-	    std::cout << "  E " << candidate->Momentum.E() << std::endl;
-	    std::cout << "  It decays into " << candidate->D1 << "  " << candidate->D2 << std::endl;
-	    std::cout << candidate->D0 << "  " << candidate->DZ << std::endl;
-	    std::cout << " Its initial position " 
-
-	    Candidate* D1 =  static_cast<Candidate*>(fInputArray->At(candidate->D1));
-	    Candidate* D2 =  static_cast<Candidate*>(fInputArray->At(candidate->D2));
-	    std::cout << "   D1PID, x " << D1->PID << "  " << D1->Momentum.E() << "  " << D1->InitialPosition.X()<< "/" << D1->InitialPosition.Y()<< "/" << D1->InitialPosition.Z() << " its final position " << D1->Position.X()<< "/" << D1->Position.Y()<< "/" << D1->Position.Z() << std::endl;
-	    std::cout << "   D2PID, x " << D2->PID << "  " << D2->Momentum.E() << "  " << D2->InitialPosition.X()<< "/" << D2->InitialPosition.Y()<< "/" << D2->InitialPosition.Z() << " its final position " << D2->Position.X()<< "/" << D2->Position.Y()<< "/" << D2->Position.Z() << std::endl;
-	   	
+	if (fPdgCodes.size() == 0 || find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
+	    if (find(storedMothers.begin(), storedMothers.end(), mother) == storedMothers.end()) {
+		storeCandidate(mother);
+		storedMothers.push_back(mother);
+		fOutputArrayMothers->Add(mother);
+	    }
 	}
     }
-            */
-
-    fOutputArray->Add(candidate);
 
   }
 }
