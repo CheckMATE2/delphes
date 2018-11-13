@@ -28,7 +28,7 @@
  */
 
 #include "classes/DelphesModule.h"
-
+#include "classes/DelphesClasses.h"
 #include <deque>
 
 class TObjArray;
@@ -44,6 +44,7 @@ public:
   void Init();
   void Process();
   void Finish();
+  void printCandidate(Candidate* currPart, std::string currSpaces);
 
 private:
 

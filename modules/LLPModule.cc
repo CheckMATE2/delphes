@@ -107,6 +107,18 @@ void LLPModule::Finish()
 
 //------------------------------------------------------------------------------
 
+void LLPModule::printCandidate(Candidate* currPart, std::string currSpaces) {
+    std::cout << currSpaces <<  currPart << "  " << currPart->Status << "  " << currPart->PID << " " << currPart->Momentum.E() << " " << currPart->InitialPosition.T() << "/" << currPart->InitialPosition.X()<< "/" << currPart->InitialPosition.Y()<< "/" << currPart->InitialPosition.Z() << " -> " << currPart->Position.T() << "/" << currPart->Position.X()<< "/" << currPart->Position.Y()<< "/" << currPart->Position.Z() << std::endl;
+    if (currPart->D1 > 0) {
+        Candidate* currPart1 = static_cast<Candidate*>(fInputArray->At(currPart->D1));	    
+	printCandidate(currPart1, currSpaces+"  ");
+    }
+    if (currPart->D2 > 0 and currPart->D2 != currPart->D1) {
+        Candidate* currPart2 = static_cast<Candidate*>(fInputArray->At(currPart->D2));	    
+	printCandidate(currPart2, currSpaces+"  ");
+    }
+}
+
 void LLPModule::Process()
 {
   Candidate *candidate;
@@ -114,21 +126,38 @@ void LLPModule::Process()
 
   // loop over all input candidates
   fItInputArray->Reset();
+  std::cout << " New Event " << std::endl;
+  int counter = 0;
   while((candidate = static_cast<Candidate*>(fItInputArray->Next())))
   {
     candidatePosition = candidate->Position;
     candidateMomentum = candidate->Momentum;
 
     if (candidate->PID == 1000024) {
+	std::cout << "Chargino " << counter++ << std::endl;
+	Candidate* currPart = candidate;
+	std::string nSpaces = "";
+	printCandidate(candidate, "");
+    }
+
+	
+	/*
 	std::cout << "Found Chargino" << std::endl;
 	if (candidate->D1 > 0) {
+	    std::cout << "  E " << candidate->Momentum.E() << std::endl;
 	    std::cout << "  It decays into " << candidate->D1 << "  " << candidate->D2 << std::endl;
-	    GenParticle* D1 =  static_cast<GenParticle *>(fInputArray->At(candidate->D1));
-	    GenParticle* D2 =  static_cast<GenParticle *>(fInputArray->At(candidate->D2));
-	    std::cout << "   D1PID, x " << D1->PID << "  " << D1->PT << " " << D1->X << "/" << D1->T << std::endl;
-	    std::cout << "   D2PID, x " << D2->PID << "  " << D2->PT << " " << D2->X << "/" << D1->T << std::endl;
+	    std::cout << candidate->D0 << "  " << candidate->DZ << std::endl;
+	    std::cout << " Its initial position " 
+
+	    Candidate* D1 =  static_cast<Candidate*>(fInputArray->At(candidate->D1));
+	    Candidate* D2 =  static_cast<Candidate*>(fInputArray->At(candidate->D2));
+	    std::cout << "   D1PID, x " << D1->PID << "  " << D1->Momentum.E() << "  " << D1->InitialPosition.X()<< "/" << D1->InitialPosition.Y()<< "/" << D1->InitialPosition.Z() << " its final position " << D1->Position.X()<< "/" << D1->Position.Y()<< "/" << D1->Position.Z() << std::endl;
+	    std::cout << "   D2PID, x " << D2->PID << "  " << D2->Momentum.E() << "  " << D2->InitialPosition.X()<< "/" << D2->InitialPosition.Y()<< "/" << D2->InitialPosition.Z() << " its final position " << D2->Position.X()<< "/" << D2->Position.Y()<< "/" << D2->Position.Z() << std::endl;
+	   	
 	}
     }
+            */
+
     fOutputArray->Add(candidate);
 
   }
