@@ -117,15 +117,43 @@ float decRad(Candidate* c) {
 }
 
 void LLPModule::storeCandidate(Candidate* candidate) {
-    fOutputArrayAll->Add(candidate);
+    //std::cout << "Start " << fOutputArrayAll->GetEntries() << " and c " << candidate << "(" << candidate->PID << ") decays into " << candidate->D1 << "  " << candidate->D2;
+    Candidate* currPart1;
+    Candidate* currPart2;
     if (candidate->D1 >= 0) {
-	Candidate* currPart1 = static_cast<Candidate*>(fInputArray->At(candidate->D1));
+	currPart1 = static_cast<Candidate*>(fInputArray->At(candidate->D1));
+	currPart2 = static_cast<Candidate*>(fInputArray->At(candidate->D2));
+	//std::cout << " = " << currPart1 << " (" << currPart1->PID << ") and " << currPart2 << " (" << currPart2->PID << ")" << std::endl;
+    }
+    int motherIndex = fOutputArrayAll->GetEntries();
+    bool onePartDecay = candidate->D1 == candidate->D2;
+    fOutputArrayAll->Add(candidate);
+    double y;
+    //std::cin >> y;
+    if (candidate->D1 >= 0) {
+	// Change the mothers index to the new index it gets through the reduced size of the output list
+	//std::cout << "Changed " << currPart1 << " mother to " << motherIndex << std::endl;
+	currPart1->M1 = motherIndex;
 	storeCandidate(currPart1);
+	candidate->D1 = motherIndex+1;
+	//std::cout << "Changed " << candidate << " D1 to " << motherIndex+1 << std::endl;
+	if (onePartDecay) // Indices are equal if it is a 'transisition' P -> P
+	    candidate->D2 = motherIndex+1;
     }
-    if (candidate->D2 >= 0) {
-	Candidate* currPart2 = static_cast<Candidate*>(fInputArray->At(candidate->D2));
+    
+    // as daughter1 was added next, the new D1 index is motherIndex+1    
+    int currIndex = fOutputArrayAll->GetEntries();
+    if (!onePartDecay && candidate->D2 >= 0) {	
+	currPart2->M1 = motherIndex;
+	//std::cout << "Changed " << currPart2 << " mother to " << motherIndex << std::endl;
 	storeCandidate(currPart2);
+	//daughter2 was added at the  currIndex
+	candidate->D2 = currIndex;
+	//std::cout << "Changed " << candidate << " D1 to " << currIndex << std::endl;
     }
+    //std::cout << "All.size() end " << fOutputArrayAll->GetEntries() << " " << candidate->D1 << "  " << candidate->D2 << std::endl;
+    double x;
+    //std::cin >> x;
 }
 
 
@@ -149,15 +177,18 @@ void LLPModule::Process()
 	Candidate* mother = static_cast<Candidate*>(fInputArray->At(candidate->M1));
 	
 	if (fPdgCodes.size() == 0 || find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
-	    if (find(storedMothers.begin(), storedMothers.end(), mother) == storedMothers.end()) {
-		storeCandidate(mother);
+	    if (find(storedMothers.begin(), storedMothers.end(), mother) == storedMothers.end()) {      
 		storedMothers.push_back(mother);
 		fOutputArrayMothers->Add(mother);
 	    }
 	}
     }
-
   }
+    //std::cout << "Found " << storedMothers.size() << " mothers" << std::endl;
+    for(int i =0; i < storedMothers.size(); i++) {
+	//std::cout << "Mother " << i << ": " << storedMothers[i] << std::endl;
+	storeCandidate(storedMothers[i]);
+    }
 }
 
 //------------------------------------------------------------------------------
