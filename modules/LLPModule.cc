@@ -176,7 +176,7 @@ void LLPModule::Process()
     if ( (fMinRadius <= d) && (d <= fMaxRadius) ) {	
 	Candidate* mother = static_cast<Candidate*>(fInputArray->At(candidate->M1));
 	
-	if (fPdgCodes.size() == 0 || find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
+	if (find(fPdgCodes.begin(), fPdgCodes.end(), mother->PID) != fPdgCodes.end()) {
 	    if (find(storedMothers.begin(), storedMothers.end(), mother) == storedMothers.end()) {      
 		storedMothers.push_back(mother);
 		fOutputArrayMothers->Add(mother);
