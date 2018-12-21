@@ -62,6 +62,8 @@ private:
   TObjArray *fOutputArrayAll; //!
   TObjArray *fOutputArrayMothers; //!
   TObjArray *fOutputArrayTracks; //!
+  TObjArray *fOutputArrayStableDaughters; //!
+  
 
   ClassDef(LLPModule, 1)
 };

@@ -95,8 +95,9 @@ void LLPModule::Init()
   // create output array(s)
 
   fOutputArrayAll = ExportArray(GetString("OutputArrayAll", "All"));
-  fOutputArrayTracks = ExportArray(GetString("OutputArrayTracks", "All"));
+  fOutputArrayTracks = ExportArray(GetString("OutputArrayTracks", "Tracks"));
   fOutputArrayMothers = ExportArray(GetString("OutputArrayMothers", "Mothers"));
+  fOutputArrayStableDaughters = ExportArray(GetString("OutputArrayStableDaughters", "StableDaughters"));
 
 }
 
@@ -143,6 +144,8 @@ void LLPModule::storeCandidate(Candidate* candidate) {
 	if (onePartDecay) // Indices are equal if it is a 'transisition' P -> P
 	    candidate->D2 = motherIndex+1;
     }
+    else // if there is no daughter, we have a stable particle
+	fOutputArrayStableDaughters->Add(candidate);
     
     // as daughter1 was added next, the new D1 index is motherIndex+1    
     int currIndex = fOutputArrayAll->GetEntries();
