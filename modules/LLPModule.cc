@@ -95,6 +95,7 @@ void LLPModule::Init()
   // create output array(s)
 
   fOutputArrayAll = ExportArray(GetString("OutputArrayAll", "All"));
+  fOutputArrayTracks = ExportArray(GetString("OutputArrayTracks", "All"));
   fOutputArrayMothers = ExportArray(GetString("OutputArrayMothers", "Mothers"));
 
 }
@@ -128,6 +129,8 @@ void LLPModule::storeCandidate(Candidate* candidate) {
     int motherIndex = fOutputArrayAll->GetEntries();
     bool onePartDecay = candidate->D1 == candidate->D2;
     fOutputArrayAll->Add(candidate);
+    if (candidate->Charge != 0)
+	fOutputArrayTracks->Add(candidate);
     double y;
     //std::cin >> y;
     if (candidate->D1 >= 0) {
